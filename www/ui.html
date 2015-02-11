@@ -7,23 +7,40 @@
     <link rel="stylesheet" type="text/css" href="/css/normalize.css" />
     <link rel="stylesheet" type="text/css" href="/css/demo.css" />
     <link rel="stylesheet" type="text/css" href="/css/component.css" />  
-  <script type="text/javascript" src="/js/jquery-2.1.3.js"></script>
-  <script type="text/javascript" src="/js/jquery-ui-1.11/jquery-ui.min.js"></script>
-  <script type="text/javascript">
-//<![CDATA[
+    <script type="text/javascript" src="/js/jquery-2.1.3.js"></script>
+    <script type="text/javascript" src="/js/jquery-ui-1.11/jquery-ui.min.js"></script>
+    <script type="text/javascript">
+     function getIt() {
+     // jQuery.support.cors=true;
+        var jsonQuery = {"jsonrpc": "2.0","method": "runCmds","params": {"version": 1,"cmds": ["show interfaces status"],"format": "json"},"id": "CapiExplorer-123"};
+        $.ajax({
+          type: "post",
+          url: "https://admin@172.16.130.100/command-api",
+          cache: false,
+          crossDomain: true,
+          data: JSON.stringify(jsonQuery),
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          success: function (data, status) {
+           alert(JSON.stringify(data));
+          },
+          error: function (xhr) {
+           // alert(xhr.responseText);
+           alert("fail");
+          }
+        });
+     }
+
       $(document).ready(function() {
         $("#accordion").accordion({ 
           header: "h3", 
-          create: function (event, ui) {$("span#result").html ($("span#result").html () + "<b>Created</b><br>");},
-          beforeActivate : function (event, ui){$("span#result").html ($("span#result").html () + ", <b>beforeActivate</b><br>");},
-          activate: function (event, ui) {$("span#result").html ($("span#result").html () + "<b>activate</b><br>");} 
         });
         //list
         $(".overIt").click(function(event){
           // alert($(this).find('.sVal').html() );
           sVal=$(this).find('.sVal').html();
           sKey=$(this).find('.sKey').html();
-          //ajax에 쿼리하기.
+          getIt();
           $("#LeafSwitchName").html(sKey);
           $( "#accordion" ).accordion({ active: 1 });
         });
@@ -43,12 +60,10 @@
         });  
         
       } );
-  //]]>
+  
   </script>
   <style type="text/css">
-/*<![CDATA[*/
   .demoHeaders {font-size: 250%;  }
-  /*]]>*/
   </style>
 </head>
 <body>
@@ -148,14 +163,14 @@
           <div align="center">
             <table>
               <tr>
-                <td class="key1"><img src="/img/green.gif" height="40" width="40" /></td>
-                <td class="val1">Connected</td>
-                <td class="key1"><img src="/img/yellow.gif" height="40" width="40" /></td>
-                <td class="val1">Not Connected</td>
-                <td class="key1"><img src="/img/red.gif" height="40" width="40" /></td>
-                <td class="val1">Disabled</td>
-                <td class="key1"><img src="/img/black.jpg" height="40" width="40" /></td>
-                <td class="val1">-</td>
+                <td class="key1" align=right><img src="/img/green.gif" height="40" width="40" /></td>
+                <td class="val1" align=left>Connected</td>
+                <td class="key1" align=right><img src="/img/yellow.gif" height="40" width="40" /></td>
+                <td class="val1" align=left>Not Connected</td>
+                <td class="key1" align=right><img src="/img/red.gif" height="40" width="40" /></td>
+                <td class="val1" align=left>Disabled</td>
+                <td class="key1" align=right><img src="/img/black.jpg" height="40" width="40" /></td>
+                <td class="val1" align=left>-</td>
               </tr>
             </table>
           </div>
