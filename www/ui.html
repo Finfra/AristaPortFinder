@@ -10,27 +10,65 @@
     <script type="text/javascript" src="/js/jquery-2.1.3.js"></script>
     <script type="text/javascript" src="/js/jquery-ui-1.11/jquery-ui.min.js"></script>
     <script type="text/javascript">
-     function getIt() {
-     // jQuery.support.cors=true;
-        var jsonQuery = {"jsonrpc": "2.0","method": "runCmds","params": {"version": 1,"cmds": ["show interfaces status"],"format": "json"},"id": "CapiExplorer-123"};
+      var sKey='Not Yet Set';
+      var sVal='Not Yet Set';
+      function setPort(data){
+        ks=Object.keys(data["result"][0]["interfaceStatuses"]);
+        for(k in ks){
+            var reExp = /^Ethernet/;
+            if( ks[k].match(reExp)=="Ethernet" ){
+                var v=data["result"][0]["interfaceStatuses"][ks[k]]["linkStatus"];
+                var portId="#p"+ks[k].replace(/^Ethernet/,"");
+                switch(v){
+                case 'connected':
+                    $(portId).find('img').attr('src','/img/green.gif');
+                    break;    
+                case 'not connected':
+                    $(portId).find('img').attr('src','/img/yellow.gif');
+                    break;    
+                case 'disabled':
+                    $(portId).find('img').attr('src','/img/red.gif');
+                    break;    
+                case 'connected':
+                    $(portId).find('img').attr('src','/img/black.gif');
+                    break;    
+                }
+            }
+        }        
+
+      }
+      function getJsonQuery(commands){
+        ss='{"jsonrpc": "2.0","method": "runCmds","params": {"version": 1,"cmds":["';
+        for( s in commands){
+          ss=ss+commands[s] +'"';
+        };
+        ss=ss+'],"format": "json"},"id": "CapiExplorer-123"}';
+        ss=JSON.parse(ss);
+        //alert(ss["jsonrpc"]);
+        return ss;
+     }
+     function getIt(cmds) {
+        jQuery.support.cors=true;
+        getJsonQuery(cmds);
+        var theUrl=sVal;
+        var jsonQuery = getJsonQuery(cmds);
         $.ajax({
           type: "post",
-          url: "https://admin@172.16.130.100/command-api",
+          url: theUrl,
           cache: false,
           crossDomain: true,
           data: JSON.stringify(jsonQuery),
           contentType: "application/json; charset=utf-8",
           dataType: "json",
           success: function (data, status) {
-           alert(JSON.stringify(data));
+           setPort(data);
+           $( "#accordion" ).accordion({ active: 1 });
           },
           error: function (xhr) {
-           // alert(xhr.responseText);
            alert("fail");
           }
         });
      }
-
       $(document).ready(function() {
         $("#accordion").accordion({ 
           header: "h3", 
@@ -40,15 +78,15 @@
           // alert($(this).find('.sVal').html() );
           sVal=$(this).find('.sVal').html();
           sKey=$(this).find('.sKey').html();
-          getIt();
+          getIt(['show interfaces status']);
           $("#LeafSwitchName").html(sKey);
-          $( "#accordion" ).accordion({ active: 1 });
         });
         //port
         $(".port").click(function(event){
           // alert($(this).html());
           portLabel=$(this).find('.portLabel').html();
           //alert(portLabel);
+          // locator-led interface "+
           $("#portNameSt").html(portLabel);
           $("#LeafSwitchNameSt").html($("#LeafSwitchName").html());
           $("#accordion" ).accordion({ active: 2 });
@@ -58,7 +96,6 @@
         $("#sGo").click(function(event){
           $( "#accordion" ).accordion({ active: 3 });
         });  
-        
       } );
   
   </script>
@@ -70,6 +107,7 @@
   <!-- Accordion -->
   <h2 class="demoHeaders"><img src="/img/eos-screenshot.jpg" alt="" height="42" width=
   "142" style="margin-right: 100px" /> Leaf Switch Port Finder</h2>
+  <div id=log>-</div>
   <div id="accordion">
     <div>
       <h3><a href="#">Compute Leaf Switch List</a></h3>
@@ -83,14 +121,11 @@
             </tr>
           </thead>
           <tbody>
-            <tr class=overIt><td class=sKey>L.S.1</td><td class=sVal>10.10.0.1</td><td></td></tr>
-            <tr class=overIt><td class=sKey>L.S.2</td><td class=sVal>10.10.0.2</td><td></td></tr>
-            <tr class=overIt><td class=sKey>L.S.3</td><td class=sVal>10.10.0.3</td><td></td></tr>
-            <tr class=overIt><td class=sKey>L.S.4</td><td class=sVal>10.10.0.4</td><td></td></tr>
-            <tr class=overIt><td class=sKey>L.S.5</td><td class=sVal>10.10.0.5</td><td></td></tr>
-            <tr class=overIt><td class=sKey>L.S.6</td><td class=sVal>10.10.0.6</td><td></td></tr>
-            <tr class=overIt><td class=sKey>L.S.7</td><td class=sVal>10.10.0.7</td><td></td></tr>
-            <tr class=overIt><td class=sKey>L.S.8</td><td class=sVal>10.10.0.8</td><td></td></tr>
+            <tr class=overIt><td class=sKey>L.S.1</td><td class=sVal>https://192.168.1.201/command-api</td><td></td></tr>
+            <tr class=overIt><td class=sKey>L.S.2</td><td class=sVal>https://192.168.1.202/command-api</td><td></td></tr>
+            <tr class=overIt><td class=sKey>L.S.3</td><td class=sVal>https://192.168.1.203/command-api</td><td></td></tr>
+            <tr class=overIt><td class=sKey>L.S.4</td><td class=sVal>https://192.168.1.204/command-api</td><td></td></tr>
+            <tr class=overIt><td class=sKey>L.S.5</td><td class=sVal>https://192.168.1.205/command-api</td><td></td></tr>            
           </tbody>
         </table>
       </div>
@@ -103,59 +138,59 @@
             <table  id="switch1" class="portTable" background="/img/7050TX.png">
               <tr>
                 <td id="portLeftMargin" class="portLeftMargin" rowspan=2></td>
-                <td id="p1" class="port"><div class=portLabel>1</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p3" class="port"><div class=portLabel>3</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p5" class="port"><div class=portLabel>5</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p7" class="port"><div class=portLabel>7</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p9" class="port"><div class=portLabel>9</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p11" class="port"><div class=portLabel>11</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p13" class="port"><div class=portLabel>13</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p15" class="port"><div class=portLabel>15</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
+                <td id="p1" class="port"><div class=portLabel>1</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p3" class="port"><div class=portLabel>3</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p5" class="port"><div class=portLabel>5</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p7" class="port"><div class=portLabel>7</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p9" class="port"><div class=portLabel>9</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p11" class="port"><div class=portLabel>11</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p13" class="port"><div class=portLabel>13</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p15" class="port"><div class=portLabel>15</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
                 <td id="p31" class="portMargin" rowspan=2></td>
-                <td id="p17" class="port"><div class=portLabel>17</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p19" class="port"><div class=portLabel>19</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p21" class="port"><div class=portLabel>21</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p23" class="port"><div class=portLabel>23</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p25" class="port"><div class=portLabel>25</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p27" class="port"><div class=portLabel>27</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p29" class="port"><div class=portLabel>29</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p31" class="port"><div class=portLabel>31</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
+                <td id="p17" class="port"><div class=portLabel>17</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p19" class="port"><div class=portLabel>19</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p21" class="port"><div class=portLabel>21</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p23" class="port"><div class=portLabel>23</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p25" class="port"><div class=portLabel>25</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p27" class="port"><div class=portLabel>27</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p29" class="port"><div class=portLabel>29</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p31" class="port"><div class=portLabel>31</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
                 <td id="p31" class="portMargin" rowspan=2></td>
-                <td id="p33" class="port"><div class=portLabel>33</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p35" class="port"><div class=portLabel>35</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p37" class="port"><div class=portLabel>37</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p39" class="port"><div class=portLabel>39</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p41" class="port"><div class=portLabel>41</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p43" class="port"><div class=portLabel>43</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p45" class="port"><div class=portLabel>45</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
-                <td id="p47" class="port"><div class=portLabel>47</div> <br><img src="/img/green.gif" height="20" width="20" /></td>
+                <td id="p33" class="port"><div class=portLabel>33</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p35" class="port"><div class=portLabel>35</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p37" class="port"><div class=portLabel>37</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p39" class="port"><div class=portLabel>39</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p41" class="port"><div class=portLabel>41</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p43" class="port"><div class=portLabel>43</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p45" class="port"><div class=portLabel>45</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p47" class="port"><div class=portLabel>47</div> <br><img src="/img/black.gif" height="20" width="20" /></td>
                 <td id="portRightMargin" class="portRightMargin"  rowspan=2>-</td>
               </tr>
               <tr>
-                <td id="p2" class="port" ><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>2</div>   </td>
-                <td id="p4" class="port" ><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>4</div>   </td>
-                <td id="p6" class="port" ><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>6</div>   </td>
-                <td id="p8" class="port" ><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>8</div>   </td>
-                <td id="p10" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>10</div> </td>
-                <td id="p12" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>12</div> </td>
-                <td id="p14" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>14</div> </td>
-                <td id="p16" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>16</div> </td>
-                <td id="p18" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>18</div> </td>
-                <td id="p20" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>20</div> </td>
-                <td id="p22" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>22</div> </td>
-                <td id="p24" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>24</div> </td>
-                <td id="p26" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>26</div> </td>
-                <td id="p28" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>28</div> </td>
-                <td id="p30" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>30</div> </td>
-                <td id="p32" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>32</div> </td>
-                <td id="p34" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>34</div> </td>
-                <td id="p36" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>36</div> </td>
-                <td id="p38" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>38</div> </td>
-                <td id="p40" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>40</div> </td>
-                <td id="p42" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>42</div> </td>
-                <td id="p44" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>44</div> </td>
-                <td id="p46" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>46</div> </td>
-                <td id="p48" class="port"><br><img src="/img/green.gif" height="20" width="20" /><div class=portLabel>48</div> </td>
+                <td id="p2" class="port" ><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>2</div>   </td>
+                <td id="p4" class="port" ><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>4</div>   </td>
+                <td id="p6" class="port" ><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>6</div>   </td>
+                <td id="p8" class="port" ><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>8</div>   </td>
+                <td id="p10" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>10</div> </td>
+                <td id="p12" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>12</div> </td>
+                <td id="p14" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>14</div> </td>
+                <td id="p16" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>16</div> </td>
+                <td id="p18" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>18</div> </td>
+                <td id="p20" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>20</div> </td>
+                <td id="p22" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>22</div> </td>
+                <td id="p24" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>24</div> </td>
+                <td id="p26" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>26</div> </td>
+                <td id="p28" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>28</div> </td>
+                <td id="p30" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>30</div> </td>
+                <td id="p32" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>32</div> </td>
+                <td id="p34" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>34</div> </td>
+                <td id="p36" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>36</div> </td>
+                <td id="p38" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>38</div> </td>
+                <td id="p40" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>40</div> </td>
+                <td id="p42" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>42</div> </td>
+                <td id="p44" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>44</div> </td>
+                <td id="p46" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>46</div> </td>
+                <td id="p48" class="port"><br><img src="/img/black.gif" height="20" width="20" /><div class=portLabel>48</div> </td>
               </tr>
             </table>
             -
