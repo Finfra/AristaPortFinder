@@ -1,0 +1,288 @@
+/*#arista-mark {margin-right:10px;margin-left:10px;margin-top:10px;}*/
+#arista-mark {position:absolute;top:36px;left:1100px;z-index: 2;}
+/*.demoHeaders {font-size: 500%;margin-bottom:40px;margin: 0px; }*/
+#tabs{width:1224px;margin-left:10px;margin-top: 10px}
+#topology1{height:400px;width: 800px;position:relative;left:100px;margin-bottom: 150px;margin-right: 100px}
+.leaf{position:absolute;top:420px;z-index: 1;} 
+#leaf1{left:140px;} 
+#leaf2{left:310px;} 
+#leaf3{left:480px;} 
+#leaf4{left:660px;} 
+#leaf5{left:840px;} 
+
+.leafText{position:absolute;top:440px;font-size: 120%;z-index: 0;} 
+#leaf1Text{left:210px;} 
+#leaf2Text{left:380px;} 
+#leaf3Text{left:550px;} 
+#leaf4Text{left:730px;} 
+#leaf5Text{left:920px;} 
+
+
+#vlanValue{width:60px;}
+#portStatusTbl{width:600px;}
+#vlanApplyForm{width:300px;}
+#LeafSwitchName{
+	background-color: #ffE;
+	font-size: 33px;		
+}
+#edgeLeafSS{
+    width: 100%;
+    vertical-align: top;
+}
+.edgeLeafSST{
+    width: 500px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px; 
+}
+.edgeLeafSStd{
+    vertical-align: top;
+}
+.button{
+    font-size: 200%;
+    height: 100px;
+}
+h3{display: block;
+font-size: 1.17em;
+-webkit-margin-before: 1em;
+-webkit-margin-after: 1em;
+-webkit-margin-start: 0px;
+-webkit-margin-end: 0px;
+font-weight: bold;}
+
+/*#accordion{position:absolute;top:220px;width: 1250px;}*/
+.accordionHeader{
+    cursor: pointer;
+    margin: 2px 0 0 0;
+    padding: .5em .5em .5em 1.7em;
+    font-size: 100%;
+}
+
+#switch1 {
+    border-top: 30px solid transparent;
+    border-bottom: 30px solid transparent;
+    border-left: 0px solid transparent;
+    border-right: 0px solid transparent;
+    border-collapse: collapse;
+    margin: 1px 1px 1px 1px ;
+    width: 1150px;
+    height: 117px;
+    background-repeat: no-repeat;
+    background-position: left; 
+    background-image: url("/img/7050TX.png");
+}
+.port {
+    width: 63px ;
+    margin: 0px;
+    padding: 10px 0px 0px 0px;
+    text-align: center;
+    
+}
+.portLabel{
+    background: ;
+    color:rgba(255,0,0,0) ;
+    padding: 10px 0px 20px 0px;
+    width: 28px;
+    margin: 20px 0px 20px 0px;
+    padding:px 0px 0px 0px;
+    text-align: center;
+/*    box-shadow: 10px 10px 3px #888888;*/
+
+}
+.portLeftMargin{
+    padding: 0px;
+    width: 90px;
+}
+.portMargin1{
+    padding: 11px;
+    width: 0px;
+}
+.portMargin2{
+    padding: 0px;
+    width: 50px;
+}
+.portRightMargin{
+    padding: 0px;
+    width: 650px;
+}
+
+
+/*.portTable,port,portTabletr{
+}*/
+
+body {
+    background: #fafafa ;
+    color: #444;
+    font: 100%/30px 'Helvetica Neue', helvetica, arial, sans-serif;
+    text-shadow: 0 1px 0 #fff;
+}
+
+strong {
+    font-weight: bold; 
+}
+
+em {
+    font-style: italic; 
+}
+table{
+    padding: 0px;
+    margin:  0px;
+}
+
+tr{
+    padding: 0px;
+    margin:  0px;    
+}
+td{
+    padding: 0px;
+    margin:  0px;
+}
+.vTopAlign{
+    vertical-align: top;
+}
+.vBottomAlign{
+    vertical-align: middle;
+}
+table.tbl {
+    background: #f5f5f5;
+    border-collapse: separate;
+    box-shadow: inset 0 1px 0 #fff;
+    font-size: 12px;
+    line-height: 24px;
+    margin: 30px auto;
+    text-align: left;
+    font-family:arial;
+	font-size:20px;
+	font-weight:bold;
+    
+}
+
+th.tbl {
+    background: url(http://jackrugile.com/images/misc/noise-diagonal.png), linear-gradient(#777, #444);
+    border-left: 1px solid #555;
+    border-right: 1px solid #777;
+    border-top: 1px solid #555;
+    border-bottom: 1px solid #333;
+    box-shadow: inset 0 1px 0 #999;
+    color: #fff;
+    font-weight: bold;
+    padding: 10px 15px;
+    position: relative;
+    text-shadow: 0 1px 0 #000;  
+}
+
+th:after {
+    background: linear-gradient(rgba(255,255,255,0), rgba(255,255,255,.08));
+    content: '';
+    display: block;
+    height: 25%;
+    left: 0;
+    margin: 1px 0 0 0;
+    position: absolute;
+    top: 25%;
+    width: 100%;
+}
+
+th.tbl:first-child {
+    border-left: 1px solid #777;    
+    box-shadow: inset 1px 1px 0 #999;
+}
+
+th.tbl:last-child {
+    box-shadow: inset -1px 1px 0 #999;
+}
+
+td.tbl {
+    border-right: 1px solid #fff;
+    border-left: 1px solid #e8e8e8;
+    border-top: 1px solid #fff;
+    border-bottom: 1px solid #e8e8e8;
+    padding: 10px 15px;
+    position: relative;
+    transition: all 300ms;
+    
+}
+
+td.tbl:first-child {
+    box-shadow: inset 1px 0 0 #fff;
+}   
+
+td.tbl:last-child {
+    border-right: 1px solid #e8e8e8;
+    box-shadow: inset -1px 0 0 #fff;
+}   
+
+tr.tbl {
+    background: url(http://jackrugile.com/images/misc/noise-diagonal.png);  
+}
+
+tr.tbl:nth-child(odd) td.tbl {
+    background: #f1f1f1 url(http://jackrugile.com/images/misc/noise-diagonal.png);  
+}
+
+tr.tbl:last-of-type td.tbl {
+    box-shadow: inset 0 -1px 0 #fff; 
+}
+
+tr.tbl:last-of-type td.tbl:first-child {
+    box-shadow: inset 1px -1px 0 #fff;
+}   
+
+tr.tbl:last-of-type td.tbl:last-child {
+    box-shadow: inset -1px -1px 0 #fff;
+}   
+
+tbody.tbl:hover td.tbl {
+    color: transparent;
+    text-shadow: 0 0 3px #aaa;
+}
+
+tbody.tbl:hover tr.tbl:hover td.tbl {
+    color: #444;
+    text-shadow: 0 1px 0 #fff;
+}
+
+
+
+
+.button {
+	-moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
+	box-shadow:inset 0px 1px 0px 0px #ffffff;
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf));
+	background:-moz-linear-gradient(top, #ededed 5%, #dfdfdf 100%);
+	background:-webkit-linear-gradient(top, #ededed 5%, #dfdfdf 100%);
+	background:-o-linear-gradient(top, #ededed 5%, #dfdfdf 100%);
+	background:-ms-linear-gradient(top, #ededed 5%, #dfdfdf 100%);
+	background:linear-gradient(to bottom, #ededed 5%, #dfdfdf 100%);
+	/*filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf',GradientType=0);*/
+	background-color:#ededed;
+	-moz-border-radius:6px;
+	-webkit-border-radius:6px;
+	border-radius:6px;
+	border:1px solid #dcdcdc;
+	display:inline-block;
+	cursor:pointer;
+	color:#777777;
+	font-family:arial;
+	font-size:14px;
+	font-weight:bold;
+	padding:6px 24px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #ffffff;
+    height: 50px
+}
+.button:hover {
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed));
+	background:-moz-linear-gradient(top, #dfdfdf 5%, #ededed 100%);
+	background:-webkit-linear-gradient(top, #dfdfdf 5%, #ededed 100%);
+	background:-o-linear-gradient(top, #dfdfdf 5%, #ededed 100%);
+	background:-ms-linear-gradient(top, #dfdfdf 5%, #ededed 100%);
+	background:linear-gradient(to bottom, #dfdfdf 5%, #ededed 100%);
+	background-color:#dfdfdf;
+}
+.button:active {
+	position:relative;
+	top:1px;
+}

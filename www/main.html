@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Leaf Switch Port Finder</title>
+    <link type="text/css" href="/css/smoothness/jquery-ui-1.8.18.custom.css" rel="stylesheet" />
+    <link type="text/css" href="/css/jquery-ui.css rel=" />
+    <link rel="stylesheet" type="text/css" href="/css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="/css/demo.css" />
+    <link rel="stylesheet" type="text/css" href="/css/component.css" />
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <script type="text/javascript" src="/js/jquery-2.1.3.js"></script>
+    <script type="text/javascript" src="/js/jquery-ui-1.11/jquery-ui.min.js"></script>
+    <script type="text/javascript">
+    leafs={
+      "leaf1":{"ip":"172.16.130.100","name":"PocAL1"},
+      "leaf2":{"ip":"172.16.130.100","name":"PocAL2"},
+      "leaf3":{"ip":"172.16.130.100","name":"PocAL3"},
+      "leaf4":{"ip":"172.16.130.100","name":"PocAL4"},
+      "leaf5":{"ip":"172.16.130.100","name":"PocAL5"}      
+    }; 
+    leafSwitchs={
+      "leafSwitch1":{"ip":"172.16.130.100","name":"leafSwitch1"},
+      "leafSwitch2":{"ip":"172.16.130.100","name":"leafSwitch1"}
+    };
+    var isLedOn=0;
+    function setPort(data){
+        ks=Object.keys(data["interfaceStatuses"]);
+        for(k in ks){
+            var reExp = /^Ethernet/;
+            if( ks[k].match(reExp)=="Ethernet" ){
+                var v=data["interfaceStatuses"][ks[k]]["linkStatus"];
+                var portId="#p"+ks[k].replace(/^Ethernet/,"");
+                switch(v){
+                case 'connected':
+                    $(portId).find('img').attr('src','/img/green.gif');
+                    break;    
+                case 'not connected':
+                    $(portId).find('img').attr('src','/img/yellow.gif');
+                    break;    
+                case 'disabled':
+                    $(portId).find('img').attr('src','/img/red.gif');
+                    break;    
+                case 'connected':
+                    $(portId).find('img').attr('src','/img/black.gif');
+                    break;    
+                }
+            }
+        }        
+
+      }
+    $(document).ready(function() {
+        // jQueryUI 
+        $(function() {$( "#tabs" ).tabs();});
+        $("#accordion").accordion({header: "h3",});
+        
+        $("#leaf1Text").html(leafs["leaf1"]["name"] );
+        $("#leaf2Text").html(leafs["leaf2"]["name"] );
+        $("#leaf3Text").html(leafs["leaf3"]["name"] );
+        $("#leaf4Text").html(leafs["leaf4"]["name"] );
+        $("#leaf5Text").html(leafs["leaf5"]["name"] );
+
+        // todo nowage : err
+        // for(l in Object.keys(leafs)){
+        //   $("#leaf"+l+"Text").html(leafs["leaf"+l+""]["name"] );
+        // }  
+        
+
+        // UI Event
+        $(".leaf").mouseover(function(event) {
+          $(this).css('height', '140px');
+          $(this).css('width',  '440px');
+        });
+        $(".leaf").mouseleave(function(event) {
+          $(this).css('height', '70px');
+          $(this).css('width',  '220px');
+        });
+
+                
+
+        // Resign Leaf view
+        $( "#tabs" ).tabs({
+          activate: function( event, ui ) {  
+            // alert($( "#tabs" ).tabs( "option", "active" ));
+            var activedTab =$( "#tabs" ).tabs( "option", "active" );
+            if( activedTab != 1 ){
+              $( "#tabs" ).tabs({
+                disabled: [ 1 ]
+              });
+            }
+            // $("#accordion").css('display','none');
+            portLabel=$(this).find('.portLabel').html();
+            if(isLedOn==1){
+              alert('Led turn off');
+              isLedOn=0;
+              $.post("/cgi-bin/eosClientRequest.py",
+                {
+                  cmd:"no locator-led interface "+portLabel,
+                  ip:leafs[leafName]["ip"],
+                  format:"text"
+                },
+                function(data, status){
+                  // alert('Led Off');
+                  alert("Data: " + JSON.stringify(data) + "\n\nStatus: " + status);
+                },
+                "text"
+              ).done(function(){alert("Led turn off.")}).fail(function(){alert('fail');});
+            }
+          }
+        });
+
+        // Command Event 
+        $(".leaf").click(function(event){
+          var leafName=$(this).attr('id');
+          $.post("/cgi-bin/eosClientRequest.py",
+            {
+                cmd:"show interfaces status",
+                ip:leafs[leafName]["ip"]
+            },
+            function(data, status){
+              setPort(data);
+              $("#LeafSwitchName").html(leafs[leafName]["name"]);
+              $("#LeafName").html(leafName);
+              $("#accordion" ).accordion({ active: 0 });
+              //Activate Second Tab
+              $( "#tabs" ).tabs({
+                disabled: [ ]
+              });              
+              $( "#tabs" ).tabs({active: 1}); 
+              $( "#tabs" ).tabs("refresh" );
+              // $("#accordion").css('display','');
+              // alert("Data: " + JSON.stringify(data) + "\n\nStatus: " + status);
+            },
+            "json"
+          ).done(function(){}).fail(function(){alert('fail');});
+        });
+        
+        $(".port").click(function(event){
+          var leafName=$("#LeafName").html();
+          portLabel=$(this).find('.portLabel').html();
+          $.post("/cgi-bin/eosClientRequest.py",
+            {
+                cmd:"show interfaces ethernet "+portLabel+" status",
+                ip:leafs[leafName]["ip"]
+            },
+            function(data, status){
+              $("#LeafSwitchNameSt").html($("#LeafSwitchName").html());
+              $("#interfaceStatuses_portLabel").html(portLabel);
+              var portNameSt=Object.keys(data["interfaceStatuses"])[0];
+              $("#portNameSt").html(portNameSt);
+              var dataie=data["interfaceStatuses"][portNameSt];
+              $("#interfaceStatuses_description").html(dataie["description"]);
+              $("#interfaceStatuses_duplex").html(dataie["duplex"]);
+              $("#interfaceStatuses_vlanInformation_1").html(dataie["vlanInformation"]["interfaceMode"]);
+              $("#interfaceStatuses_vlanInformation_2").html(dataie["vlanInformation"]["interfaceForwardingModel"]);
+              $("#interfaceStatuses_bandwidth").html(dataie["bandwidth"]);
+              $("#interfaceStatuses_interfaceType").html(dataie["interfaceType"]);
+              $("#interfaceStatuses_autoNegotiateActive").html((dataie["autoNegotiateActive"]?"True":"False"));
+              $("#interfaceStatuses_autoNegotigateActive").html((dataie["autoNegotigateActive"]?"True":"False"));
+              $("#interfaceStatuses_linkStatus").html(dataie["linkStatus"]);
+              $("#accordion" ).accordion({ active: 1 });
+              // alert("Data: " + JSON.stringify(data) + "\n\nStatus: " + status);
+            },
+            "json"
+          ).done(function(){
+            $.post("/cgi-bin/eosClientRequest.py",
+              {
+                cmd:"locator-led interface "+portLabel,
+                ip:leafs[leafName]["ip"],
+                format:"json"
+              },
+              function(data, status){
+                alert('Led On');
+                isLedOn=1;
+                //alert("Data: " + JSON.stringify(data) + "\n\nStatus: " + status);
+              },
+              "text"
+            ).done(function(){}).fail(function(){alert('Led On Fail');});
+          }).fail(function(){alert('Not Userable Port is not Work-fail');});
+          //default vlan 
+          $.post("/cgi-bin/eosClientRequest.py",
+            {
+              cmd:["enable","yshow running-config interfaces ethernet 1"],
+              ip:leafs[leafName]["ip"],
+              format:"text"
+            },
+            function(data, status){
+              var pattern = /.*vlan.*/g;
+              //alert(pattern.test(data));
+              if(pattern.test(data)){
+                data=data.replace(/\\n/gi,"");
+                data=data.replace(/.*vlan/gi,"");
+                data=data.replace(/\ no.*\ .*/gi,"");
+                data=data.replace(/\ /gi,"");
+                $("#vlanValue").val(data);
+              };
+            },
+            "text"
+          ).done(function(){}).fail(function(){alert('fail');});
+
+        }); 
+
+        // vlan apply
+        $("#vlanApply").click(function(event){
+          // alert("interface ethernet "+$("#interfaceStatuses_portLabel").html()+','+"switchport access vlan 4"+$("#vlanValue").attr('value'));
+          // alert($("#vlanValue").val());
+          $.post("/cgi-bin/eosClientRequest.py",
+            {
+              cmd:["enable","configure","interface ethernet "+$("#interfaceStatuses_portLabel").html(),"switchport access vlan " + $("#vlanValue").val() ],
+              ip:leafSwitchs["leafSwitch1"]["ip"],
+              format:"json"
+            },
+            function(data, status){
+              //alert("Data: " + JSON.stringify(data) + "\n\nStatus: " + status)         ;
+            },
+            "json"
+          ).done(function(){alert('VLAN is applied to this Port.');}).fail(function(){alert('fail');});
+        });
+
+        //Edge Leaf Switch Status
+        $("#sGo").click(function(event){
+          $.post("/cgi-bin/eosClientRequest.py",
+            {
+                cmd:"show ip dhcp relay",
+                ip:leafSwitchs["leafSwitch1"]["ip"],
+                format:"text"
+            },
+            function(data, status){
+              // alert("Data: " + JSON.stringify(data) + "\n\nStatus: " + status)             
+              $("#EdgeLeafSwitch1_output").html(data["output"].replace(/\n/gi,"<br>"));
+              $("#EdgeLeafSwitch1_ip").html(leafSwitchs["leafSwitch1"]["ip"]);
+            },
+            "json"
+          );
+          $.post("/cgi-bin/eosClientRequest.py",
+            {
+                cmd:"show ip dhcp relay",
+                ip:leafSwitchs["leafSwitch2"]["ip"],
+                format:"text"
+            },
+            function(data, status){
+              // alert("Data: " + JSON.stringify(data) + "\n\nStatus: " + status)             
+              $("#EdgeLeafSwitch2_output").html(data["output"].replace(/\n/gi,"<br>"));
+              $("#EdgeLeafSwitch2_ip").html(leafSwitchs["leafSwitch1"]["ip"]);
+            },
+            "json"
+          ).done(function(){}).fail(function(){alert('fail');});
+          
+          //gateway1 setting
+          $.post("/cgi-bin/eosClientRequest.py",
+            {
+                cmd:["enable","show running-config interfaces vlan "+$("#vlanValue").val()],
+                ip:leafSwitchs["leafSwitch1"]["ip"],
+                format:"text"
+            },
+            function(data, status){
+              data=data.replace(/\\n/gi,"");
+              data=data.replace(/.*vlan/gi,"");
+              data=data.replace(/.*\ ip\ address/gi,"");
+              data=data.replace(/"\}\].*/gi,"");
+              data=data.replace(/\ /gi,"");
+              // alert("Data: " + JSON.stringify(data) + "\n\nStatus: " + status)             
+              $("#gateway1").html(data);
+            },
+            "text"
+          ).done(function(){}).fail(function(){alert('fail');});
+          //gateway2 setting
+          $.post("/cgi-bin/eosClientRequest.py",
+            {
+                cmd:["enable","show running-config interfaces vlan "+$("#vlanValue").val()],
+                ip:leafSwitchs["leafSwitch2"]["ip"],
+                format:"text"
+            },
+            function(data, status){
+              data=data.replace(/\\n/gi,"");
+              data=data.replace(/.*vlan/gi,"");
+              data=data.replace(/.*\ ip\ address/gi,"");
+              data=data.replace(/"\}\].*/gi,"");
+              data=data.replace(/\ /gi,"");
+              // alert("Data: " + JSON.stringify(data) + "\n\nStatus: " + status)             
+              $("#gateway2").html(data);
+            },
+            "text"
+          ).done(function(){}).fail(function(){alert('fail');});
+          $("#accordion" ).accordion({ active: 2 });
+        });  
+        $( "#tabs" ).tabs({
+          //debug for nowage
+          disabled: [ 1 ]
+        });
+    });
+    </script>
+
+  </head>
+  <body>
+    <!-- <h2 class="demoHeaders" >
+      <img id="arista-mark" src="/img/arista-mark.gif" alt="" height="42" width="142" style="" /><center> Leaf Switch Port Finder</center>
+    </h2> -->
+    <img id="arista-mark" src="/img/arista-mark.gif" alt="" height="42" width="142" style="" />
+    <div id="tabs">
+      <ul>
+        <li><a href="#tabs-1">토폴로지</a></li>
+        <li><a href="#tabs-2">리프</a></li>
+        <li><a href="#tabs-3">인벤토리</a></li>
+      </ul>
+      <div id="tabs-1">
+        <img id="topology1" src="/img/topology2.png" alt=""/>
+        <img id="leaf1" class="leaf" src="/img/lx.gif" alt="leaf-1" width="220px" height="70px"/><div id="leaf1Text"  class="leaf leafText" >xxx</div>
+        <img id="leaf2" class="leaf" src="/img/lx.gif" alt="leaf-2" width="220px" height="70px"/><div id="leaf2Text"  class="leaf leafText" >xxx</div>
+        <img id="leaf3" class="leaf" src="/img/lx.gif" alt="leaf-3" width="220px" height="70px"/><div id="leaf3Text"  class="leaf leafText" >xxx</div>
+        <img id="leaf4" class="leaf" src="/img/lx.gif" alt="leaf-4" width="220px" height="70px"/><div id="leaf4Text"  class="leaf leafText" >xxx</div>
+        <img id="leaf5" class="leaf" src="/img/lx.gif" alt="leaf-5" width="220px" height="70px"/><div id="leaf5Text"  class="leaf leafText" >xxx</div>
+
+      </div>
+      <div id="tabs-2">
+        <div id="accordion">
+          <h3 class=accordionHeader>Compute Leaf Switch Port View</h3>
+          <div>
+            <div>
+              <div align="center">
+                <div id=LeafSwitchName> Leaf Switch</div><div id="LeafName" style="display:none">xx</div>
+                            <table  id="switch1" class="portTable" >
+              <tr>
+                <td id="portLeftMargin" class="portLeftMargin" rowspan=2></td>
+                <td id="p1" class="port"><div class=portLabel>1</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p3" class="port"><div class=portLabel>3</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p5" class="port"><div class=portLabel>5</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p7" class="port"><div class=portLabel>7</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p9" class="port"><div class=portLabel>9</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p11" class="port"><div class=portLabel>11</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p13" class="port"><div class=portLabel>13</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p15" class="port"><div class=portLabel>15</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p31" class="portMargin1" rowspan=2></td>
+                <td id="p17" class="port"><div class=portLabel>17</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p19" class="port"><div class=portLabel>19</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p21" class="port"><div class=portLabel>21</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p23" class="port"><div class=portLabel>23</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p25" class="port"><div class=portLabel>25</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p27" class="port"><div class=portLabel>27</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p29" class="port"><div class=portLabel>29</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p31" class="port"><div class=portLabel>31</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p31" class="portMargin2" rowspan=2></td>
+                <td id="p33" class="port"><div class=portLabel>33</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p35" class="port"><div class=portLabel>35</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p37" class="port"><div class=portLabel>37</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p39" class="port"><div class=portLabel>39</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p41" class="port"><div class=portLabel>41</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p43" class="port"><div class=portLabel>43</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p45" class="port"><div class=portLabel>45</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="p47" class="port"><div class=portLabel>47</div> <img class="portImg" src="/img/black.gif" height="20" width="20" /></td>
+                <td id="portRightMargin" class="portRightMargin"  rowspan=2>-</td>
+              </tr>
+              <tr>
+                <td id="p2" class="port" ><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>2</div>   </td>
+                <td id="p4" class="port" ><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>4</div>   </td>
+                <td id="p6" class="port" ><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>6</div>   </td>
+                <td id="p8" class="port" ><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>8</div>   </td>
+                <td id="p10" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>10</div> </td>
+                <td id="p12" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>12</div> </td>
+                <td id="p14" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>14</div> </td>
+                <td id="p16" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>16</div> </td>
+                <td id="p18" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>18</div> </td>
+                <td id="p20" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>20</div> </td>
+                <td id="p22" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>22</div> </td>
+                <td id="p24" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>24</div> </td>
+                <td id="p26" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>26</div> </td>
+                <td id="p28" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>28</div> </td>
+                <td id="p30" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>30</div> </td>
+                <td id="p32" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>32</div> </td>
+                <td id="p34" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>34</div> </td>
+                <td id="p36" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>36</div> </td>
+                <td id="p38" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>38</div> </td>
+                <td id="p40" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>40</div> </td>
+                <td id="p42" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>42</div> </td>
+                <td id="p44" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>44</div> </td>
+                <td id="p46" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>46</div> </td>
+                <td id="p48" class="port"><img class="portImg" src="/img/black.gif" height="20" width="20" /><div class=portLabel>48</div> </td>
+              </tr>
+            </table>
+              </div>
+              <div align="center">
+                <table class=tbl>
+                  <tr class=tbl>
+                    <td class="key1" align=right><img src="/img/green.gif" height="40" width="40" /></td>
+                    <td class="val1" align=left>Connected</td>
+                    <td class="key1" align=right><img src="/img/yellow.gif" height="40" width="40" /></td>
+                    <td class="val1" align=left>Not Connected</td>
+                    <td class="key1" align=right><img src="/img/red.gif" height="40" width="40" /></td>
+                    <td class="val1" align=left>Disabled</td>
+                    <td class="key1" align=right><img src="/img/black.gif" height="40" width="40" /></td>
+                    <td class="val1" align=left>Not Userable</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <h3 class=accordionHeader>Compute Leaf Switch Port Status</h3>
+          <div>
+            <table width=100% class="vBottomAlign">
+                <tr  class="vBottomAlign">
+                  <td  class="vTopAlign">
+                    <table class="tbl" id="portStatusTbl"  width=400px >
+                      <thead class="tbl" >
+                        <tr class="tbl" >
+                          <th class="tbl"  >Key</td>
+                          <th class="tbl"  colspan=2>Value</td>
+                        </tr>
+                      </thead>
+                      <tbody class="tbl" >
+                        <tr class="tbl" >
+                          <td class="tbl"  colspan="1" id=LeafSwitchNameSt>{LeafSwitchName}</td>
+                          <td class="tbl"  colspan="2" id=portNameSt>{portname}</td>
+                        </tr>
+                        <tr class="tbl" >
+                          <td class="tbl"  >Port Label</td>
+                          <td class="tbl"  id="interfaceStatuses_portLabel" colspan=2>{values}</td>
+                        </tr>
+                        <tr class="tbl" >
+                          <td class="tbl"  >description</td>
+                          <td class="tbl"  id="interfaceStatuses_description" colspan=2>{values}</td>
+                        </tr>
+                        <tr class="tbl" >
+                          <td class="tbl"  >duplex</td>
+                          <td class="tbl"  id="interfaceStatuses_duplex" colspan=2>{values}</td>
+                        </tr>
+                        <tr class="tbl" >
+                          <td class="tbl"   rowspan=2>vlanInformation</td>
+                          <td class="tbl"  >interfaceMode</td>
+                          <td class="tbl"  id="interfaceStatuses_vlanInformation_1" >{values}</td>
+                        </tr>
+                        <tr class="tbl" >
+                          <td class="tbl" >interfaceForwardingModel</td>
+                          <td class="tbl"  id="interfaceStatuses_vlanInformation_2" >{values}</td>
+                        </tr>
+                        <tr class="tbl" >
+                          <td class="tbl"  >bandwidth</td>
+                          <td class="tbl"  id="interfaceStatuses_bandwidth" colspan=2>{values}</td>
+                        </tr>
+                        <tr class="tbl" >
+                          <td class="tbl"  >interfaceType</td>
+                          <td class="tbl"  id="interfaceStatuses_interfaceType" colspan=2>{values}</td>
+                        </tr>
+                        <tr class="tbl" >
+                          <td class="tbl"  >autoNegotiateActive</td>
+                          <td class="tbl"  id="interfaceStatuses_autoNegotiateActive" colspan=2>{values}</td>
+                        </tr>
+                        <tr class="tbl" >
+                          <td class="tbl"  >autoNegotigateActive</td>
+                          <td class="tbl"  id="interfaceStatuses_autoNegotigateActive" colspan=2>{values}</td>
+                        </tr>
+                        <tr class="tbl" >
+                          <td class="tbl"  >linkStatus</td>
+                          <td class="tbl"  id="interfaceStatuses_linkStatus" colspan=2>{values}</td>
+                        </tr>
+                       </tbody> 
+                    </table>
+                    <div align="center"> <input id="sGo" class="button" type="submit" value="go! Edge Leaf Switch Status" /><br /></div>
+
+                  </td>
+                  <td >
+                    <table >
+                      <tr >
+                        <td id="vlanApplyForm" rowspan="2" >
+                          VLAN <input id="vlanValue" type="text" name="VLAN" value="1" />
+                          <input id="vlanApply" class="button" type="submit" value="Apply" /><br />
+                          <div id=vlanDesc></div>
+                        </td>
+                        <td width=30px>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+          </div>
+          <h3 class=accordionHeader>Edge Leaf Switch Status</h3>
+          <div>
+            <table id="edgeLeafSS">
+              <tr >
+                <td class="edgeLeafSStd">
+                  <table class="tbl edgeLeafSST">
+                    <thead class="tbl"  >
+                      <tr class="tbl" >
+                        <th class="tbl"  colsapan="2">Edge Leaf Switch #1</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+                  <table class="tbl edgeLeafSST">
+                    <tbody>
+                      <tr class="tbl" >
+                        <td class="tbl" >ip</td>
+                        <td class="tbl"  id="EdgeLeafSwitch1_ip" >{values}</td>
+                      </tr>
+                      <tr class="tbl" >
+                        <td class="tbl" >output</td>
+                        <td class="tbl"  id="EdgeLeafSwitch1_output" >{values}</td>
+                      </tr>
+                      <tr class="tbl" >
+                        <td class="tbl" >gateway</td>
+                        <td class="tbl"  id="gateway1" >{values}</td>
+                      </tr>                      
+                    </tbody>
+
+                  </table>
+                </td>
+                <td width=100px>
+                  
+                </td>
+                <td class="edgeLeafSStd">
+                  <table class="tbl edgeLeafSST" >
+                    <thead class="tbl" >
+                      <tr class="tbl" >
+                        <th class="tbl"  colsapan="2">Edge Leaf Switch #2</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>    
+                  <table class="tbl edgeLeafSST" >
+                    <tbody class="tbl" >
+                      <tr class="tbl" >
+                        <td class="tbl" >ip</td>
+                        <td class="tbl"  id="EdgeLeafSwitch2_ip" >{values}</td>
+                      </tr>
+                      <tr class="tbl" >
+                        <td class="tbl" >output</td>
+                        <td class="tbl"  id="EdgeLeafSwitch2_output" >{values}</td>
+                      </tr>
+                      <tr class="tbl" >
+                        <td class="tbl" >gateway</td>
+                        <td class="tbl"  id="gateway2" >{values}</td>
+                      </tr>                                            
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="tabs-3">
+        <p>-</p>
+      </div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+
+     
+  </body>
+</html>

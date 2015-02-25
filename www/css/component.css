@@ -33,41 +33,7 @@ td, th {
     padding: 0.75em 1.5em;
     text-align: left;
 }
-#switch1 {
-	width: 1184px;
-    border-top: 10px solid transparent;
-	border-bottom: 30px solid transparent;
-	border-left: 25px solid transparent;
-	border-right: 0px solid transparent;
-    border-collapse: collapse;
-    margin: 1px 1px 1px 1px ;
-    width: 1284px;
-    height: 117px;
-    background-repeat: no-repeat;
-    background-position: center; 
-	/*background: #f00;*/
-}
 
-.port {
-	padding: 0px 11px  0px  0px ;
-    width: 50px ;
-    text-align: center;
-}
-.portLabel{
-	background: #f00;
-}
-.portLeftMargin{
-	padding: 0px;
-	width: 170px;
-}
-.portMargin{
-	padding: 0px;
-	width: 30px;
-}
-.portRightMargin{
-	padding: 0px;
-	width: 660px;
-}
 td.err {
 		background-color: #e992b9;
 		color: #fff;
@@ -139,7 +105,3 @@ td.user-name {
 	max-height: 50vh;
 }
 
-#LeafSwitchName{
-	background-color: #ffE;
-	font-size: 66px;		
-}
