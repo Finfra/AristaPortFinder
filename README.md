@@ -5,10 +5,10 @@ Warn : This Project is for Test, not for ur job.
 
 # Version
 
-v0.1.1
+v0.2
 
 # Setting
-1. check packages : jsonrpclib-0.1.3-py2.7
+1. check packages : jsonrpclib-0.1.3-py2.7<br>
     [ ~/]$ python 
     Python 2.7.5 (default, May 19 2013, 13:26:46) 
     [GCC 4.2.1 Compatible Apple Clang 4.1 ((tags/Apple/clang-421.11.66))] on darwin
